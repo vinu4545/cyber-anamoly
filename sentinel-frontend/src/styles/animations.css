@@ -1,0 +1,63 @@
+/* Custom animation styles for Birthday Experience */
+
+@keyframes gentle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 15px rgba(255, 143, 171, 0.4));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 25px rgba(255, 143, 171, 0.7));
+  }
+}
+
+.animate-gentle-pulse {
+  animation: gentle-pulse 3s infinite ease-in-out;
+}
+
+@keyframes ribbon-wave {
+  0%, 100% {
+    transform: rotate(-3deg) translateY(0);
+  }
+  50% {
+    transform: rotate(3deg) translateY(-8px);
+  }
+}
+
+.animate-ribbon {
+  animation: ribbon-wave 5s infinite ease-in-out;
+}
+
+@keyframes sparkle-rotate {
+  0% {
+    transform: rotate(0deg) scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(360deg) scale(0.8);
+    opacity: 0.5;
+  }
+}
+
+.animate-sparkle {
+  animation: sparkle-rotate 3s infinite ease-in-out;
+}
+
+/* Envelope unfolding animations */
+.envelope-shadow {
+  filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.6));
+}
+
+/* Paper letter texture simulation */
+.paper-texture {
+  background-color: #FFF9F2;
+  background-image: 
+    radial-gradient(#e5d7c3 0.75px, transparent 0.75px),
+    radial-gradient(#e5d7c3 0.75px, #FFF9F2 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+}

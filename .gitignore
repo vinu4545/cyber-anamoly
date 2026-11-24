@@ -1,0 +1,38 @@
+# Python environments and generated files
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+
+# Frontend dependencies and build output
+node_modules/
+dist
+/export/
+
+# Local backend state and uploaded training artifacts
+/sentinel-backend/data/sentinel.db
+/sentinel-backend/data/up_*.pkl
+/sentinel-backend/data/x_*.pkl
+/sentinel-backend/data/z_*.npy/
+
+# Local secrets and logs
+.env
+.env.*
+!.env.example
+*.log
+
+# Large local training data and generated model/export artifacts
+/Tuesday-WorkingHours.pcap_ISCX.csv
+/artifacts/
+
+# Large datasets
+*.csv
+# Large datasets
+Tuesday-WorkingHours.pcap_ISCX.csv
+
+# Generated data
+sentinel-backend/data/*.npy
+
+

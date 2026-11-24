@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pandas
+numpy
+joblib
+scikit-learn   # MUST match the version in the notebook environment that trained the model

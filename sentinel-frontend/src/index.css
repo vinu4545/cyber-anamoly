@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-void: #05080F;
+    --bg-base: #080B12;
+    --bg-raised: #0D1420;
+    --bg-card: #111B29;
+    --bg-elevated: #172334;
+    
+    --border-subtle: rgba(148, 175, 215, 0.08);
+    --border-strong: rgba(148, 175, 215, 0.16);
+
+    --cyan: #00D5FF;
+    --cyan-soft: #5CE6FF;
+    --violet: #7967FF;
+    --magenta: #C85BFF;
+    --success: #19D995;
+    --warning: #FFB547;
+    --critical: #FF4567;
+    
+    --text-primary: #F4F7FC;
+    --text-secondary: #8795A9;
+    --text-muted: #5B6B80;
+  }
+
+  body {
+    background-color: #05080F;
+    color: #F4F7FC;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* Custom Nocturne Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #05080F;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #172334;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #00D5FF;
+  }
+}
+
+.font-display {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Glassmorphism Card Utility */
+.glass-panel {
+  background-color: rgba(17, 27, 41, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 175, 215, 0.1);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.glass-panel-elevated {
+  background-color: rgba(23, 35, 52, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(148, 175, 215, 0.18);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.7);
+}
+
+/* Glow Utilities */
+.glow-cyan {
+  box-shadow: 0 0 0 1px rgba(0, 213, 255, 0.35), 0 8px 32px -8px rgba(0, 213, 255, 0.35);
+}
+
+.glow-critical {
+  box-shadow: 0 0 0 1px rgba(255, 69, 103, 0.4), 0 8px 32px -8px rgba(255, 69, 103, 0.45);
+}
+
+.glow-violet {
+  box-shadow: 0 0 0 1px rgba(121, 103, 255, 0.35), 0 8px 32px -8px rgba(121, 103, 255, 0.35);
+}
+
+/* Background SOC Grid */
+.soc-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(148, 175, 215, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 175, 215, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black 20%, transparent 80%);
+}
+
+/* Gradient Text */
+.text-brand-gradient {
+  background: linear-gradient(135deg, #00D5FF 0%, #7967FF 55%, #C85BFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-threat-gradient {
+  background: linear-gradient(135deg, #FF4567 0%, #FF8A5B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Rotating conic border for Primary CTA */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+/* Radar Sweep Keyframe */
+@keyframes radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar-sweep {
+  animation: radar-sweep 4s linear infinite;
+}

@@ -149,7 +149,7 @@ export const TrafficAnalyzerPage: React.FC = () => {
         contamination,
         n_estimators: nEstimators,
         train_normal_only: trainNormalOnly,
-        upload_id: uploadData?.file_name || "demo_dataset",
+        upload_id: uploadData?.upload_id,
       });
 
       const jobId = res.job_id;

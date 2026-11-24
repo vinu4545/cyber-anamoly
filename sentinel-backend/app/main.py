@@ -201,12 +201,11 @@ def detect(body: dict = Body(...)):
     uid, pct = body.get("upload_id"), str(body.get("threshold_percentile", 95))
     e = engine(); cfg = e["cfg"]; feats = cfg["features"]
     if pct not in cfg["thresholds"]: raise HTTPException(422, f"threshold_percentile must be one of {list(cfg['thresholds'])}")
+    if not uid:
+        raise HTTPException(400, "upload_id is required. Upload a CSV or select the demo dataset first.")
     p = DATA / f"up_{uid}.pkl"
-    if not uid or not p.exists():
-        # Fallback to demo
-        load_demo()
-        p = DATA / f"up_demo_dataset.pkl"
-        uid = "demo_dataset"
+    if not p.exists():
+        raise HTTPException(404, "Dataset not found. Upload the CSV again or select the demo dataset.")
     df = pd.read_pickle(p); stages = []; T = time.perf_counter()
     def stage(name, t): stages.append({"stage": name, "seconds": round(time.perf_counter() - t, 3)})
     t = time.perf_counter()
@@ -331,9 +330,7 @@ def export(sid: str):
     df["prediction"] = np.where(df.pop("flagged") == 1, "ANOMALOUS", "NORMAL")
     return Response(df.to_csv(index=False), media_type="text/csv", headers={"Content-Disposition": f"attachment; filename=sentinel_{sid}.csv"})
 
-@app.get("/api/analysis/{sid}/export.pdf")
-@app.get("/api/export/pdf")
-def export_pdf(sid: str = Query(default=None)):
+def export_pdf_response(sid: str | None):
     c = db()
     if sid:
         r = c.execute("SELECT * FROM sessions WHERE id=?", (sid,)).fetchone()
@@ -373,6 +370,14 @@ def export_pdf(sid: str = Query(default=None)):
     pdf_bytes = generate_pdf_report(sess_dict, top_records)
     filename = f"Sentinel_Security_Report_{r['id']}.pdf"
     return Response(content=pdf_bytes, media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="{filename}"'})
+
+@app.get("/api/analysis/{sid}/export.pdf")
+def export_session_pdf(sid: str):
+    return export_pdf_response(sid)
+
+@app.get("/api/export/pdf")
+def export_latest_pdf(sid: str | None = Query(default=None)):
+    return export_pdf_response(sid)
 
 @app.get("/api/investigations")
 def investigations(session_id: str = "", status: str = "", search: str = "", limit: int = Query(100, le=500)):

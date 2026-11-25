@@ -893,7 +893,9 @@ export const TrafficAnalyzerPage: React.FC = () => {
                       </td>
                       <td className="py-2.5 text-[#00D5FF]">{r.protocol || "TCP"}</td>
                       <td className="py-2.5 text-[#8795A9]">
-                        {Number(r.flow_duration || 0).toLocaleString()} µs
+                        {r.flow_duration != null
+                          ? `${r.flow_duration.toLocaleString()} µs`
+                          : "N/A"}
                       </td>
                       <td className="py-2.5">
                         <div className="flex items-center gap-2">

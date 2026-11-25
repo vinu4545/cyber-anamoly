@@ -15,6 +15,7 @@ import { api } from "../../lib/api";
 
 export const SettingsPage: React.FC = () => {
   const { severityThresholds, setSeverityThresholds } = useSentinelStore();
+  const backendUrl = import.meta.env.VITE_API_URL?.replace(/\/+$/, "");
 
   const [criticalThresh, setCriticalThresh] = useState(severityThresholds.critical);
   const [highThresh, setHighThresh] = useState(severityThresholds.high);
@@ -124,7 +125,9 @@ export const SettingsPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
           <div className="p-3.5 rounded-xl bg-[#080B12] border border-[#94AFD7]/10 space-y-1">
             <span className="text-[#5B6B80] text-[10px] block">FASTAPI BACKEND ENDPOINT</span>
-            <span className="break-all font-bold text-[#00D5FF]">http://127.0.0.1:8000/api</span>
+            <span className="break-all font-bold text-[#00D5FF]">
+              {backendUrl ? `${backendUrl}/api` : "Same origin (/api)"}
+            </span>
           </div>
           <div className="p-3.5 rounded-xl bg-[#080B12] border border-[#94AFD7]/10 space-y-1">
             <span className="text-[#5B6B80] text-[10px] block">DATABASE PERSISTENCE</span>

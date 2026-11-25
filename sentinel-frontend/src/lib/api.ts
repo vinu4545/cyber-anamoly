@@ -1,3 +1,5 @@
+import { apiUrl } from "./apiConfig";
+
 export interface HealthResponse {
   status: string;
   timestamp: string;
@@ -169,10 +171,8 @@ export interface DetectionJobStatus {
   error?: string;
 }
 
-const API_BASE = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
-
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE}${path}`, options);
+  const res = await fetch(apiUrl(path), options);
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
     const message = errorBody.detail || errorBody.message || `Request failed with status ${res.status}`;
@@ -280,6 +280,6 @@ export const api = {
 
   search: (query: string) => request<{ query: string; results: any[] }>(`/api/search?q=${encodeURIComponent(query)}`),
 
-  exportPdfUrl: (sessionId?: string) => `/api/export/pdf${sessionId ? `?session_id=${sessionId}` : ""}`,
-  exportCsvUrl: (sessionId?: string) => `/api/export/csv${sessionId ? `?session_id=${sessionId}` : ""}`,
+  exportPdfUrl: (sessionId?: string) => apiUrl(`/api/export/pdf${sessionId ? `?session_id=${sessionId}` : ""}`),
+  exportCsvUrl: (sessionId?: string) => apiUrl(`/api/export/csv${sessionId ? `?session_id=${sessionId}` : ""}`),
 };

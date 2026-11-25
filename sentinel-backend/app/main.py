@@ -19,14 +19,17 @@ SIMULATED = ["source_ip", "destination_ip", "protocol", "timestamp"]
 MAX_ROWS = 200_000
 
 app = FastAPI(title="SENTINEL AI API", version="2.0.0")
-FRONTEND_ORIGINS = [
-    origin.strip().rstrip("/")
-    for origin in os.getenv(
-        "FRONTEND_ORIGINS",
-        "http://localhost:5173,http://127.0.0.1:5173",
-    ).split(",")
-    if origin.strip()
-]
+FRONTEND_ORIGINS = list(dict.fromkeys([
+    "https://cyberflow-sentinel-ai.vercel.app",
+    *[
+        origin.strip().rstrip("/")
+        for origin in os.getenv(
+            "FRONTEND_ORIGINS",
+            "http://localhost:5173,http://127.0.0.1:5173",
+        ).split(",")
+        if origin.strip()
+    ],
+]))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=FRONTEND_ORIGINS,

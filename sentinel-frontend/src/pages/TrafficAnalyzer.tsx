@@ -3,6 +3,7 @@ import { AlertTriangle, CheckCircle2, Download, FileUp, Loader2, Play, X } from 
 import { useCallback, useEffect, useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api, type Detail, type Rec, type Summary, type Upload } from "../api";
+import { apiUrl } from "../lib/apiConfig";
 import Counter from "../components/Counter";
 
 const STAGE_NAMES: Record<string, string> = { validate: "Validating network records", preprocess: "Processing network features", isolation_forest: "Running Isolation Forest" };
@@ -82,7 +83,7 @@ export default function TrafficAnalyzer() {
           <div className="flex flex-wrap gap-3 items-center mb-3"><div className="font-display mr-auto">Detection results</div>
             <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="bg-elev border border-line rounded px-2 py-1 text-sm"><option value="anomalous">Anomalous</option><option value="normal">Normal</option><option value="all">All</option></select>
             <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search IP or record ID" className="bg-elev border border-line rounded px-3 py-1 text-sm" />
-            <a href={`/api/analysis/${sum.session_id}/export.csv`} className="flex items-center gap-1 text-sm text-cy hover:underline"><Download size={15} />Export CSV</a></div>
+            <a href={apiUrl(`/api/analysis/${sum.session_id}/export.csv`)} className="flex items-center gap-1 text-sm text-cy hover:underline"><Download size={15} />Export CSV</a></div>
           <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="text-mut text-left"><tr><th className="py-2">Record</th><th>Source IP*</th><th>Destination IP*</th><th>Proto*</th><th>Score</th><th>Prediction</th>{sum.evaluation && <th>Ground truth</th>}</tr></thead>
             <tbody>{recs.map((r) => <tr key={r.record_id} onClick={() => api.detail(sum.session_id, r.record_id).then(setDetail)} className="border-t border-line cursor-pointer hover:bg-elev/60">
               <td className="py-2 mono">#{r.record_id}</td><td className="mono">{r.source_ip}</td><td className="mono">{r.destination_ip}</td><td>{r.protocol}</td><td className="mono">{r.anomaly_score.toFixed(3)}</td>

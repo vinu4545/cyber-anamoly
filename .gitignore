@@ -36,3 +36,4 @@ Tuesday-WorkingHours.pcap_ISCX.csv
 sentinel-backend/data/*.npy
 
 
+.vercel

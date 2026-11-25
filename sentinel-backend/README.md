@@ -26,6 +26,9 @@ FastAPI service that runs your **real, saved Isolation Forest**. No simulated de
 | GET | /api/investigations | one item per flagged record |
 | PATCH | /api/investigations/{id} | status: New, Under Investigation, Resolved, False Positive |
 
+## Demo dataset
+`data/demo_cicids2017.csv` contains 3,600 real, stratified flow rows sampled from the Tuesday CIC-IDS2017 capture: 3,200 BENIGN, 220 FTP-Patator, and 180 SSH-Patator. Demo detection runs the saved Isolation Forest and scaler against these feature rows; labels are held aside for evaluation. Network addresses and timestamps are generated separately and marked as simulated.
+
 ## Rules this code follows
 - `Label` is never a model input; it is kept aside for evaluation only. Unlabelled files work and make no attack-type claims.
 - Same preprocessing as training: 61 features, signed log1p, saved StandardScaler. Missing features give a 422 naming them. Rows with missing or infinite values are skipped and counted.

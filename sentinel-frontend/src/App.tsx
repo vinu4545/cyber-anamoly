@@ -1,6 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSentinelStore } from "./store/useSentinelStore";
+
+// Cinematic Video Intro Transition
+import { CinematicIntroTransition } from "./components/intro/CinematicIntroTransition";
 
 // Layout & Overlays
 import { Sidebar } from "./components/layout/Sidebar";
@@ -25,17 +28,15 @@ import { SettingsPage } from "./features/settings/SettingsPage";
 import { AboutPage } from "./features/about/AboutPage";
 
 export default function App() {
-  const { isConsoleOpen, activePage, sidebarCollapsed } = useSentinelStore();
-  const mainRef = useRef<HTMLElement>(null);
+  const {
+    isConsoleOpen,
+    activePage,
+    sidebarCollapsed,
+    showIntro,
+    setShowIntro,
+  } = useSentinelStore();
 
-  useEffect(() => {
-    mainRef.current?.scrollTo({ top: 0 });
-  }, [activePage]);
-
-  // If console is not yet opened, show entry landing experience
-  if (!isConsoleOpen) {
-    return <LandingPage />;
-  }
+  const [introScrollProgress, setIntroScrollProgress] = useState<number>(0);
 
   const renderActivePage = () => {
     switch (activePage) {
@@ -71,43 +72,100 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05080F] text-[#F4F7FC] relative selection:bg-[#00D5FF]/30 overflow-x-hidden font-sans">
-      {/* Background Nocturne Aurora & Grid */}
-      <div className="fixed inset-0 soc-grid-bg pointer-events-none z-0" />
-      <div className="fixed -top-48 -left-48 w-96 h-96 rounded-full bg-[#00D5FF]/5 blur-[120px] pointer-events-none" />
-      <div className="fixed -bottom-48 -right-48 w-96 h-96 rounded-full bg-[#7967FF]/8 blur-[140px] pointer-events-none" />
+    <>
+      {/* 1. Cinematic Video Intro Layer with smooth upward scroll */}
+      {showIntro && (
+        <CinematicIntroTransition
+          onProgressChange={(prog) => setIntroScrollProgress(prog)}
+          onTransitionComplete={() => {
+            setShowIntro(false);
+            setIntroScrollProgress(1.0);
+          }}
+        />
+      )}
 
-      {/* Collapsible Sidebar */}
-      <Sidebar />
+      {/* 2. Core Application Surface: Mounted and active underneath from the start */}
+      {!isConsoleOpen ? (
+        <LandingPage />
+      ) : (
+        <div
+          style={{
+            "--sidebar-width": sidebarCollapsed ? "72px" : "260px",
+            opacity: showIntro ? Math.min(1.0, 0.75 + 0.25 * introScrollProgress) : 1,
+            transform: showIntro ? `scale(${0.98 + 0.02 * introScrollProgress})` : "none",
+            transformOrigin: "center top",
+            transition: showIntro ? "transform 0.08s linear, opacity 0.08s linear" : undefined,
+          } as React.CSSProperties}
+          data-sidebar-collapsed={sidebarCollapsed}
+          className="sentinel-app-shell min-h-screen bg-[#05080F] text-[#F4F7FC] relative selection:bg-[#00D5FF]/30 font-sans"
+        >
+          {/* Background Nocturne Aurora & Grid */}
+          <div aria-hidden="true" className="sentinel-background">
+            <div className="absolute inset-0 soc-grid-bg" />
+            <div className="absolute -top-48 -left-48 w-96 h-96 rounded-full bg-[#00D5FF]/5 blur-[120px]" />
+            <div className="absolute -bottom-48 -right-48 w-96 h-96 rounded-full bg-[#7967FF]/8 blur-[140px]" />
+          </div>
 
-      {/* Main App Container */}
-      <div
-        className={`min-h-screen flex flex-col transition-all duration-300 relative z-10 ${
-          sidebarCollapsed ? "pl-[72px]" : "pl-[260px]"
-        }`}
-      >
-        {/* TopBar */}
-        <TopBar />
+          {/* Collapsible Sidebar with coordinated entrance */}
+          <div
+            className="sentinel-sidebar-slot"
+            style={{
+              transform: showIntro
+                ? `translate3d(${(1 - introScrollProgress) * -25}px, 0, 0)`
+                : "none",
+              opacity: showIntro ? Math.min(1.0, 0.6 + 0.4 * introScrollProgress) : 1,
+              transition: showIntro ? "transform 0.08s linear, opacity 0.08s linear" : undefined,
+            }}
+          >
+            <Sidebar />
+          </div>
 
-        {/* Content View with Page Animation */}
-        <main ref={mainRef} className="mt-16 h-[calc(100dvh-4rem)] shrink-0 overflow-y-auto p-6 sm:p-8 pt-8 max-w-[1600px] w-full mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activePage}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+          {/* Main App Container */}
+          <div className="sentinel-main-column relative z-10">
+            {/* TopBar with coordinated entrance */}
+            <div
+              className="sentinel-topbar-slot"
+              style={{
+                transform: showIntro
+                  ? `translate3d(0, ${(1 - introScrollProgress) * -15}px, 0)`
+                  : "none",
+                opacity: showIntro ? Math.min(1.0, 0.6 + 0.4 * introScrollProgress) : 1,
+                transition: showIntro ? "transform 0.08s linear, opacity 0.08s linear" : undefined,
+              }}
             >
-              {renderActivePage()}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
+              <TopBar />
+            </div>
 
-      {/* Overlays & Modals */}
-      <CommandCenter />
-      <InvestigationDrawer />
-    </div>
+            {/* Content View with Page Animation */}
+            <main
+              style={{
+                transform: showIntro
+                  ? `translate3d(0, ${(1 - introScrollProgress) * 20}px, 0)`
+                  : "none",
+                opacity: showIntro ? Math.min(1.0, 0.5 + 0.5 * introScrollProgress) : 1,
+                transition: showIntro ? "transform 0.08s linear, opacity 0.08s linear" : undefined,
+              }}
+              className="sentinel-page-content"
+            >
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activePage}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  {renderActivePage()}
+                </motion.div>
+              </AnimatePresence>
+            </main>
+          </div>
+
+          {/* Overlays & Modals */}
+          <CommandCenter />
+          <InvestigationDrawer />
+        </div>
+      )}
+    </>
   );
 }

@@ -170,7 +170,7 @@ export const LiveMonitorPage: React.FC = () => {
             </div>
 
             {/* Severity Filter Buttons */}
-            <div className="flex items-center gap-1.5 text-xs font-mono">
+            <div className="flex max-w-full flex-wrap items-center justify-end gap-1.5 text-xs font-mono">
               {["ALL", "NORMAL", "SUSPICIOUS", "CRITICAL"].map((f) => (
                 <button
                   key={f}

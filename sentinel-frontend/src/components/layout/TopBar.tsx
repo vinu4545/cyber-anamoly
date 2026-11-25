@@ -7,6 +7,7 @@ import {
   Cpu,
   Layers,
   FileText,
+  Play,
 } from "lucide-react";
 import { useSentinelStore } from "../../store/useSentinelStore";
 import { NAV_GROUPS } from "./Sidebar";
@@ -15,10 +16,10 @@ import { api } from "../../lib/api";
 export const TopBar: React.FC = () => {
   const {
     activePage,
-    sidebarCollapsed,
     dataMode,
     toggleCommandCenter,
     activeSessionId,
+    replayIntro,
   } = useSentinelStore();
 
   const [currentTime, setCurrentTime] = useState<string>("");
@@ -55,42 +56,40 @@ export const TopBar: React.FC = () => {
 
   return (
     <header
-      className={`h-16 fixed top-0 right-0 z-20 flex items-center justify-between px-6 border-b border-[#94AFD7]/10 bg-[#080B12]/80 backdrop-blur-xl transition-all duration-300 ${
-        sidebarCollapsed ? "left-[72px]" : "left-[260px]"
-      }`}
+      className="relative flex min-h-16 w-full flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-[#94AFD7]/10 bg-[#080B12]/80 px-4 py-2 backdrop-blur-xl transition-all duration-300 sm:px-6"
     >
       {/* Breadcrumb */}
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 text-xs text-[#8795A9]">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-2 whitespace-nowrap text-[11px] text-[#8795A9] sm:text-xs">
           <span>Console</span>
           <span>/</span>
-          <span className="font-semibold text-[#F4F7FC]">
+          <span className="max-w-[96px] truncate font-semibold text-[#F4F7FC] sm:max-w-none">
             {activeItem?.label || "Overview"}
           </span>
         </div>
       </div>
 
       {/* Middle: Command Center Trigger */}
-      <div className="flex-1 max-w-md mx-6">
+      <div className="min-w-0 max-w-md flex-1 md:mx-6">
         <button
           onClick={toggleCommandCenter}
-          className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-xl bg-[#111B29]/70 border border-[#94AFD7]/10 hover:border-[#00D5FF]/40 text-xs text-[#8795A9] hover:text-[#F4F7FC] transition-all group"
+          className="group flex w-full items-center justify-center rounded-xl border border-[#94AFD7]/10 bg-[#111B29]/70 px-2 py-1.5 text-xs text-[#8795A9] transition-all hover:border-[#00D5FF]/40 hover:text-[#F4F7FC] sm:justify-between sm:px-3.5"
         >
           <div className="flex items-center gap-2">
             <Search
               size={15}
               className="text-[#8795A9] group-hover:text-[#00D5FF] transition-colors"
             />
-            <span>Search IPs, Records, Threat IDs, Actions...</span>
+            <span className="hidden sm:inline">Search IPs, Records, Threat IDs, Actions...</span>
           </div>
-          <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-[#172334] text-[#8795A9] rounded border border-[#94AFD7]/15">
+          <kbd className="hidden rounded border border-[#94AFD7]/15 bg-[#172334] px-1.5 py-0.5 font-mono text-[10px] text-[#8795A9] sm:inline">
             ⌘K
           </kbd>
         </button>
       </div>
 
       {/* Right: Clock, Data Mode, Export, Health */}
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {/* Live Clock */}
         <div className="hidden lg:flex items-center gap-1.5 text-xs font-mono text-[#8795A9] px-2.5 py-1 rounded-lg bg-[#111B29]/50 border border-[#94AFD7]/10">
           <Clock size={13} className="text-[#00D5FF]" />
@@ -106,8 +105,18 @@ export const TopBar: React.FC = () => {
           }`}
         >
           <Layers size={13} />
-          <span>{dataMode === "demo" ? "DEMO DATA" : "YOUR DATA"}</span>
+          <span className="hidden sm:inline">{dataMode === "demo" ? "DEMO DATA" : "YOUR DATA"}</span>
         </div>
+
+        {/* Replay Cinematic Intro Button */}
+        <button
+          onClick={replayIntro}
+          className="flex items-center gap-1.5 text-xs font-mono font-semibold px-2.5 py-1.5 rounded-lg bg-[#111B29] hover:bg-[#172334] border border-[#00D5FF]/30 hover:border-[#00D5FF] text-[#00D5FF] transition-all shadow-[0_0_12px_rgba(0,213,255,0.15)] cursor-pointer"
+          title="Play Sentinel AI Cinematic Intro Video"
+        >
+          <Play size={12} className="fill-[#00D5FF]" />
+          <span className="hidden sm:inline">INTRO</span>
+        </button>
 
         {/* Quick Export PDF */}
         <a
@@ -131,7 +140,7 @@ export const TopBar: React.FC = () => {
               apiOnline ? "bg-[#19D995] animate-pulse" : "bg-[#FF4567]"
             }`}
           />
-          <span className="text-[10px] font-mono text-[#8795A9]">
+          <span className="hidden text-[10px] font-mono text-[#8795A9] sm:inline">
             {apiOnline ? "API OK" : "OFFLINE"}
           </span>
         </div>

@@ -166,14 +166,14 @@ export const SecurityAnalyticsPage: React.FC = () => {
 
         {/* Chart 4: Feature Distribution Overlay */}
         <div className="p-5 rounded-2xl glass-panel space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
             <span className="text-xs font-mono font-bold text-[#F4F7FC]">
               4. Feature Value Overlay
             </span>
             <select
               value={selectedFeature}
               onChange={(e) => setSelectedFeature(e.target.value)}
-              className="bg-[#05080F] border border-[#94AFD7]/15 rounded text-[10px] font-mono text-[#00D5FF] px-1.5 py-0.5"
+              className="max-w-full min-w-0 rounded border border-[#94AFD7]/15 bg-[#05080F] px-1.5 py-0.5 font-mono text-[10px] text-[#00D5FF]"
             >
               <option>Flow Duration</option>
               <option>Flow Packets/s</option>

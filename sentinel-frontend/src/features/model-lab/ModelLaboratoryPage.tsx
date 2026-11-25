@@ -68,27 +68,27 @@ export const ModelLaboratoryPage: React.FC = () => {
       {/* Primary Model Card */}
       <div className="p-6 rounded-2xl glass-panel border border-[#00D5FF]/30 space-y-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#00D5FF]/15 border border-[#00D5FF]/30 flex items-center justify-center text-[#00D5FF] glow-cyan">
               <Cpu size={20} />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="font-display font-bold text-base text-[#F4F7FC]">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="min-w-0 break-words font-display font-bold text-base text-[#F4F7FC]">
                   Isolation Forest Production Engine
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#19D995]/15 text-[#19D995] font-bold">
                   ACTIVE
                 </span>
               </div>
-              <span className="text-xs font-mono text-[#8795A9]">
+              <span className="break-words text-xs font-mono text-[#8795A9]">
                 Library: scikit-learn (sklearn.ensemble.IsolationForest)
               </span>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs pt-2">
+        <div className="grid grid-cols-1 gap-3 pt-2 font-mono text-xs sm:grid-cols-2 lg:grid-cols-4">
           <div className="p-3 rounded-xl bg-[#080B12] border border-[#94AFD7]/10">
             <span className="text-[10px] text-[#5B6B80] block">TREES (n_estimators)</span>
             <span className="text-sm font-bold text-[#F4F7FC]">100 Trees</span>

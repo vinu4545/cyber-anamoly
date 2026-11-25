@@ -39,7 +39,7 @@ export const ProjectWorkPage: React.FC = () => {
   return (
     <div className="flex gap-8 pb-16">
       {/* Left Sub-nav */}
-      <div className="w-64 shrink-0 hidden md:block">
+      <div className="hidden w-64 shrink-0 lg:block">
         <div className="sticky top-24 p-4 rounded-2xl glass-panel space-y-1">
           <span className="text-[10px] font-mono uppercase tracking-wider text-[#5B6B80] px-2 block mb-2 font-bold">
             RESEARCH CHAPTERS
@@ -64,7 +64,7 @@ export const ProjectWorkPage: React.FC = () => {
       </div>
 
       {/* Main Content Sections */}
-      <div className="flex-1 space-y-10 min-w-0">
+      <div className="project-work-content flex-1 min-w-0 space-y-10">
         {/* SECTION A: OVERVIEW */}
         <section id="overview" className="p-8 rounded-2xl glass-panel space-y-4">
           <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export const ProjectWorkPage: React.FC = () => {
             </h2>
           </div>
 
-          <div className="space-y-4 font-mono text-xs">
+          <div className="project-work-milestones space-y-4 font-mono text-xs">
             <div className="flex items-center gap-3 p-3 rounded-xl bg-[#080B12] border border-[#19D995]/30">
               <CheckCircle2 size={18} className="text-[#19D995] shrink-0" />
               <div className="flex-1">

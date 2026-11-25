@@ -230,8 +230,8 @@ export const OverviewPage: React.FC = () => {
       {/* Middle Row: Hero Chart & Threat Radar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Interactive Flow Volume Chart */}
-        <div className="lg:col-span-2 p-6 rounded-2xl glass-panel flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-4">
+        <div className="lg:col-span-2 min-w-0 p-6 rounded-2xl glass-panel flex flex-col justify-between">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-display font-bold text-base text-[#F4F7FC]">
                 Network Traffic Volume & Anomaly Ingress
@@ -240,7 +240,7 @@ export const OverviewPage: React.FC = () => {
                 Chronological flow distribution with normal baseline and flagged threat spikes
               </p>
             </div>
-            <div className="flex items-center gap-3 text-xs font-mono">
+            <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs font-mono">
               <span className="flex items-center gap-1.5 text-[#19D995]">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#19D995]" /> Normal
               </span>

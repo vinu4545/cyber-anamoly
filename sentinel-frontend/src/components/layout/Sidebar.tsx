@@ -80,7 +80,7 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside
-      className={`fixed top-0 left-0 bottom-0 z-30 flex flex-col transition-all duration-300 ease-out bg-[#0D1420] border-r border-[#94AFD7]/10 ${
+      className={`sticky top-0 z-30 flex h-screen w-full flex-col border-r border-[#94AFD7]/10 bg-[#0D1420] transition-all duration-300 ease-out max-md:w-[72px] ${
         sidebarCollapsed ? "w-[72px]" : "w-[260px]"
       }`}
     >
@@ -93,7 +93,7 @@ export const Sidebar: React.FC = () => {
             </div>
           </div>
           {!sidebarCollapsed && (
-            <div className="flex flex-col">
+            <div className="flex flex-col max-md:hidden">
               <span className="font-display font-bold text-sm tracking-wider text-[#F4F7FC]">
                 SENTINEL<span className="text-[#00D5FF] ml-1">AI</span>
               </span>
@@ -106,7 +106,7 @@ export const Sidebar: React.FC = () => {
 
         <button
           onClick={toggleSidebar}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-[#8795A9] hover:text-[#F4F7FC] hover:bg-[#172334] transition-colors"
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-[#8795A9] transition-colors hover:bg-[#172334] hover:text-[#F4F7FC] max-md:hidden"
           title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -118,7 +118,7 @@ export const Sidebar: React.FC = () => {
         {NAV_GROUPS.map((group) => (
           <div key={group.title} className="space-y-1">
             {!sidebarCollapsed && (
-              <div className="px-3 text-[10px] font-mono uppercase tracking-wider text-[#5B6B80] mb-1 font-semibold">
+              <div className="mb-1 px-3 text-[10px] font-mono font-semibold uppercase tracking-wider text-[#5B6B80] max-md:hidden">
                 {group.title}
               </div>
             )}
@@ -130,6 +130,7 @@ export const Sidebar: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActivePage(item.id)}
+                  aria-label={item.label}
                   className={`w-full group relative flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                     isActive
                       ? "text-[#F4F7FC] bg-[#172334] shadow-sm border border-[#00D5FF]/30"
@@ -150,12 +151,12 @@ export const Sidebar: React.FC = () => {
                   />
 
                   {!sidebarCollapsed && (
-                    <span className="truncate flex-1 text-left">{item.label}</span>
+                    <span className="flex-1 truncate text-left max-md:hidden">{item.label}</span>
                   )}
 
                   {!sidebarCollapsed && item.badge && (
                     <span
-                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      className={`rounded-full px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider max-md:hidden ${
                         item.badge === "CORE"
                           ? "bg-[#00D5FF]/15 text-[#00D5FF] border border-[#00D5FF]/30"
                           : "bg-[#FFB547]/15 text-[#FFB547] border border-[#FFB547]/30"
@@ -181,7 +182,7 @@ export const Sidebar: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#19D995] animate-pulse" />
             {!sidebarCollapsed && (
-              <div className="flex flex-col">
+              <div className="flex flex-col max-md:hidden">
                 <span className="text-[11px] font-medium text-[#F4F7FC]">IF Engine</span>
                 <span className="text-[9px] text-[#19D995] font-mono">ONLINE</span>
               </div>
@@ -190,7 +191,7 @@ export const Sidebar: React.FC = () => {
 
           {!sidebarCollapsed && (
             <span
-              className={`text-[10px] font-mono uppercase font-semibold px-2 py-0.5 rounded-md ${
+              className={`rounded-md px-2 py-0.5 font-mono text-[10px] font-semibold uppercase max-md:hidden ${
                 dataMode === "demo"
                   ? "bg-[#FFB547]/15 text-[#FFB547] border border-[#FFB547]/30"
                   : "bg-[#00D5FF]/15 text-[#00D5FF] border border-[#00D5FF]/30"

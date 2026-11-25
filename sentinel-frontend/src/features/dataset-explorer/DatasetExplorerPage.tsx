@@ -85,7 +85,7 @@ export const DatasetExplorerPage: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs font-mono">
+        <div className="flex max-w-full flex-wrap items-center justify-start gap-1.5 text-xs font-mono">
           {["ALL", "FEATURE", "LABEL", "METADATA"].map((f) => (
             <button
               key={f}

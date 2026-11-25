@@ -31,6 +31,7 @@ interface SentinelState {
     high: number;
     medium: number;
   };
+  showIntro: boolean;
 
   setActivePage: (page: PageId) => void;
   setConsoleOpen: (open: boolean) => void;
@@ -44,6 +45,8 @@ interface SentinelState {
   setCommandCenterOpen: (open: boolean) => void;
   toggleCommandCenter: () => void;
   setSeverityThresholds: (thresholds: { critical: number; high: number; medium: number }) => void;
+  setShowIntro: (show: boolean) => void;
+  replayIntro: () => void;
 }
 
 export const useSentinelStore = create<SentinelState>((set) => ({
@@ -61,6 +64,13 @@ export const useSentinelStore = create<SentinelState>((set) => ({
     high: 0.70,
     medium: 0.55,
   },
+  showIntro: (() => {
+    try {
+      return sessionStorage.getItem("sentinel_intro_seen") !== "true";
+    } catch (e) {
+      return true;
+    }
+  })(),
 
   setActivePage: (activePage) => set({ activePage }),
   setConsoleOpen: (isConsoleOpen) => set({ isConsoleOpen }),
@@ -74,4 +84,11 @@ export const useSentinelStore = create<SentinelState>((set) => ({
   setCommandCenterOpen: (isCommandCenterOpen) => set({ isCommandCenterOpen }),
   toggleCommandCenter: () => set((state) => ({ isCommandCenterOpen: !state.isCommandCenterOpen })),
   setSeverityThresholds: (severityThresholds) => set({ severityThresholds }),
+  setShowIntro: (showIntro) => set({ showIntro }),
+  replayIntro: () => {
+    try {
+      sessionStorage.removeItem("sentinel_intro_seen");
+    } catch (e) {}
+    set({ showIntro: true });
+  },
 }));

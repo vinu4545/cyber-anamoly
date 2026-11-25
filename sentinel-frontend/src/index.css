@@ -28,7 +28,6 @@
     background-color: #05080F;
     color: #F4F7FC;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    overflow-x: hidden;
   }
 
   /* Custom Nocturne Scrollbar */
@@ -135,4 +134,205 @@
 
 .animate-radar-sweep {
   animation: radar-sweep 4s linear infinite;
+}
+
+/* Shared light workspace palette */
+:root {
+  color-scheme: light;
+  --bg-void: #F1F6FB;
+  --bg-base: #F6F9FC;
+  --bg-raised: #FFFFFF;
+  --bg-card: #F7FAFD;
+  --bg-elevated: #EAF1F8;
+  --border-subtle: rgba(43, 74, 108, 0.1);
+  --border-strong: rgba(43, 74, 108, 0.18);
+  --cyan: #087F9B;
+  --cyan-soft: #0B91AE;
+  --violet: #6254C7;
+  --magenta: #A044C2;
+  --success: #07805A;
+  --warning: #A65E00;
+  --critical: #D73550;
+  --text-primary: #17283D;
+  --text-secondary: #50647A;
+  --text-muted: #6C7E92;
+}
+
+body {
+  color-scheme: light;
+  color: #17283D;
+  background: linear-gradient(135deg, #F8FBFE 0%, #EFF5FA 54%, #F2F5FC 100%);
+}
+
+.sentinel-app-shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width, 260px) minmax(0, 1fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.sentinel-sidebar-slot {
+  min-width: 0;
+}
+
+.sentinel-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sentinel-main-column {
+  display: flex;
+  min-width: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
+}
+
+.sentinel-topbar-slot {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.sentinel-page-content {
+  width: 100%;
+  max-width: 1600px;
+  min-width: 0;
+  flex: 1 0 auto;
+  margin-inline: auto;
+  padding: 2rem;
+}
+
+.project-work-content section > div:first-child {
+  flex-wrap: wrap;
+}
+
+.project-work-content section > div:first-child h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.project-work-milestones > div {
+  flex-wrap: wrap;
+}
+
+.project-work-milestones > div > div {
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .sentinel-app-shell {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .sentinel-page-content {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sentinel-page-content {
+    padding: 1.5rem;
+  }
+}
+
+::selection {
+  color: #11263B;
+  background: rgba(8, 145, 178, 0.2);
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F6FB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C6D3E1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0891B2;
+}
+
+.glass-panel {
+  background-color: rgba(255, 255, 255, 0.82);
+  border-color: rgba(43, 74, 108, 0.12);
+  box-shadow: 0 12px 32px rgba(34, 67, 102, 0.08);
+}
+
+.glass-panel-elevated {
+  background-color: rgba(255, 255, 255, 0.94);
+  border-color: rgba(43, 74, 108, 0.16);
+  box-shadow: 0 18px 44px rgba(34, 67, 102, 0.12);
+}
+
+.soc-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(37, 99, 145, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(37, 99, 145, 0.045) 1px, transparent 1px);
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 30%, black 15%, transparent 82%);
+}
+
+.text-brand-gradient {
+  background-image: linear-gradient(120deg, #0891B2 0%, #3478D4 58%, #6254C7 100%);
+}
+
+/* Remap the existing dark utility palette without changing component behavior. */
+[class~="bg-[#05080F]"] { background-color: #F3F7FB !important; }
+[class~="bg-[#05080F]/50"] { background-color: rgba(255, 255, 255, 0.88) !important; }
+[class~="bg-[#05080F]/70"],
+[class~="bg-[#05080F]/80"] { background-color: rgba(243, 247, 251, 0.94) !important; }
+[class~="bg-[#080B12]"] { background-color: #F8FAFD !important; }
+[class~="bg-[#080B12]/50"] { background-color: rgba(248, 250, 253, 0.9) !important; }
+[class~="bg-[#080B12]/60"] { background-color: rgba(248, 250, 253, 0.92) !important; }
+[class~="bg-[#080B12]/70"] { background-color: rgba(248, 250, 253, 0.94) !important; }
+[class~="bg-[#080B12]/80"] { background-color: rgba(255, 255, 255, 0.94) !important; }
+[class~="bg-[#0D1420]"] { background-color: #FFFFFF !important; }
+[class~="bg-[#0D1420]/70"] { background-color: rgba(255, 255, 255, 0.9) !important; }
+[class~="bg-[#0D1420]/80"] { background-color: rgba(255, 255, 255, 0.92) !important; }
+[class~="bg-[#0D1420]/95"] { background-color: rgba(255, 255, 255, 0.97) !important; }
+[class~="bg-[#111B29]"] { background-color: #F4F8FC !important; }
+[class~="bg-[#111B29]/50"] { background-color: rgba(241, 246, 251, 0.82) !important; }
+[class~="bg-[#111B29]/40"],
+[class~="bg-[#111B29]/60"] { background-color: rgba(241, 246, 251, 0.88) !important; }
+[class~="bg-[#111B29]/70"] { background-color: rgba(244, 248, 252, 0.92) !important; }
+[class~="bg-[#111B29]/80"] { background-color: rgba(244, 248, 252, 0.95) !important; }
+[class~="bg-[#111B29]/90"] { background-color: rgba(244, 248, 252, 0.97) !important; }
+[class~="bg-[#172334]"] { background-color: #EAF1F8 !important; }
+[class~="bg-[#172334]/60"] { background-color: rgba(234, 241, 248, 0.88) !important; }
+[class~="bg-[#172334]/70"] { background-color: rgba(234, 241, 248, 0.92) !important; }
+
+[class~="text-[#F4F7FC]"] { color: #17283D !important; }
+[class~="text-[#8795A9]"] { color: #53677D !important; }
+[class~="text-[#5B6B80]"] { color: #6B7E93 !important; }
+[class~="text-[#00D5FF]"] { color: #087F9B !important; }
+[class~="text-[#7967FF]"] { color: #6254C7 !important; }
+[class~="text-[#C85BFF]"] { color: #963BB7 !important; }
+[class~="text-[#19D995]"] { color: #07805A !important; }
+[class~="text-[#FFB547]"] { color: #A65E00 !important; }
+[class~="text-[#FF4567]"] { color: #D73550 !important; }
+
+[class~="border-[#94AFD7]/10"],
+[class~="border-[#94AFD7]/15"],
+[class~="border-[#94AFD7]/20"],
+[class~="border-[#94AFD7]/30"] { border-color: rgba(43, 74, 108, 0.14) !important; }
+
+[class~="hover:bg-[#111B29]"]:hover { background-color: #EDF3F8 !important; }
+[class~="hover:bg-[#172334]"]:hover,
+[class~="hover:bg-[#1f2f45]"]:hover,
+[class~="hover:bg-[#172334]/60"]:hover { background-color: #E4EDF6 !important; }
+[class~="hover:text-[#F4F7FC]"]:hover { color: #17283D !important; }
+
+[class~="from-[#00D5FF]"][class~="to-[#7967FF]"] {
+  background-image: linear-gradient(115deg, #06AFC7 0%, #3478D4 58%, #6254C7 100%) !important;
+}
+
+[class~="from-[#0D1420]"][class~="via-[#111B29]"][class~="to-[#0D1420]"] {
+  background-image: linear-gradient(115deg, #FFFFFF 0%, #F0F6FB 55%, #F6F4FC 100%) !important;
+}
+
+[class~="shadow-black/80"] {
+  --tw-shadow-color: rgba(28, 54, 82, 0.16) !important;
 }

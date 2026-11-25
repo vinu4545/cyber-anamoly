@@ -9,10 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from sklearn.metrics import (average_precision_score, confusion_matrix, f1_score,
                              precision_score, recall_score, roc_auc_score)
-try:
-    from app.pdf_generator import generate_pdf_report
-except ImportError:
-    from pdf_generator import generate_pdf_report
+from app.pdf_generator import generate_pdf_report
 
 ROOT = Path(__file__).resolve().parent.parent
 MODEL_DIR, DATA = ROOT / "model", ROOT / "data"

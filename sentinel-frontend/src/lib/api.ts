@@ -11,24 +11,21 @@ export interface HealthResponse {
 }
 
 export interface DatasetUploadResponse {
-  file_name: string;
-  upload_id?: string;
-  total_rows: number;
-  total_columns: number;
-  has_labels: boolean;
-  labels_found?: string[];
-  label_present?: boolean;
-  label_counts?: Record<string, number>;
-  has_ip_data?: boolean;
-  has_timestamps?: boolean;
-  column_names?: string[];
-  missing_values_count?: number;
-  infinite_values_count?: number;
-  duplicate_rows_count?: number;
+  upload_id: string;
+  file: string;
+  size_bytes: number;
+  rows: number;
+  columns: number;
+  dtypes: Record<string, string>;
+  missing_values: number;
+  infinite_values: number;
+  duplicate_rows: number;
+  label_present: boolean;
+  label_counts: Record<string, number> | null;
+  compatible: boolean;
+  missing_model_features: string[];
+  preview: Record<string, any>[];
   health_score?: number;
-  compatible?: boolean;
-  missing_model_features?: string[];
-  preview?: Record<string, any>[];
   data_mode?: string;
   message?: string;
 }

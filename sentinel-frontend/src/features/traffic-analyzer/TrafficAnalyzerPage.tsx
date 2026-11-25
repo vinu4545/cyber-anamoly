@@ -132,7 +132,7 @@ export const TrafficAnalyzerPage: React.FC = () => {
       setUploadData(res);
       setActiveUpload(res);
       setDataMode("demo");
-      setCurrentStep(2);
+      await runDetection(res.upload_id);
     } catch (err: any) {
       setUploadError(`Failed to load demo dataset: ${err.message}`);
     } finally {
@@ -140,7 +140,14 @@ export const TrafficAnalyzerPage: React.FC = () => {
     }
   };
 
-  const runDetection = async () => {
+  const runDetection = async (uploadId = uploadData?.upload_id) => {
+    if (!uploadId) {
+      setUploadError("Load a dataset before starting detection.");
+      setCurrentStep(1);
+      return;
+    }
+
+    setUploadError(null);
     setIsDetecting(true);
     setCurrentStep(4);
 
@@ -149,13 +156,13 @@ export const TrafficAnalyzerPage: React.FC = () => {
         contamination,
         n_estimators: nEstimators,
         train_normal_only: trainNormalOnly,
-        upload_id: uploadData?.upload_id,
+        upload_id: uploadId,
       });
 
       const jobId = res.job_id;
       if (!jobId) {
-        // Direct session returned
-        const sid = res.session_id || "SES-FBCC8E68";
+        const sid = res.session_id;
+        if (!sid) throw new Error("The detection service returned no session ID.");
         setActiveSessionId(sid);
         await loadSessionResults(sid, 5);
         setIsDetecting(false);
@@ -190,7 +197,8 @@ export const TrafficAnalyzerPage: React.FC = () => {
       }, 500);
     } catch (err: any) {
       setIsDetecting(false);
-      alert(`Failed to start detection: ${err.message}`);
+      setCurrentStep(1);
+      setUploadError(`Detection failed: ${err.message || "Unknown backend error."}`);
     }
   };
 
@@ -207,6 +215,9 @@ export const TrafficAnalyzerPage: React.FC = () => {
       setCurrentStep(targetStep);
     } catch (e) {
       console.error("Failed to load session details", e);
+      setIsDetecting(false);
+      setCurrentStep(1);
+      setUploadError("Detection completed, but its results could not be loaded. Please try again.");
     }
   };
 
@@ -451,20 +462,20 @@ export const TrafficAnalyzerPage: React.FC = () => {
             <div className="p-4 rounded-xl glass-panel">
               <span className="text-xs text-[#8795A9]">Total Records</span>
               <div className="text-xl font-display font-bold text-[#F4F7FC] mt-0.5">
-                {uploadData.total_rows.toLocaleString()}
+                {uploadData.rows.toLocaleString()}
               </div>
             </div>
             <div className="p-4 rounded-xl glass-panel">
               <span className="text-xs text-[#8795A9]">Feature Columns</span>
               <div className="text-xl font-display font-bold text-[#00D5FF] mt-0.5">
-                {uploadData.total_columns}
+                {uploadData.columns}
               </div>
             </div>
             <div className="p-4 rounded-xl glass-panel">
               <span className="text-xs text-[#8795A9]">Label Detected</span>
               <div className="text-xl font-display font-bold text-[#19D995] mt-0.5">
-                {uploadData.has_labels
-                  ? `Yes (${uploadData.labels_found?.length || 3} Classes)`
+                {uploadData.label_present
+                  ? `Yes (${Object.keys(uploadData.label_counts || {}).length} Classes)`
                   : "Unlabeled Telemetry"}
               </div>
             </div>
@@ -491,15 +502,15 @@ export const TrafficAnalyzerPage: React.FC = () => {
           <div className="p-5 rounded-2xl glass-panel border border-[#94AFD7]/15 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-[#F4F7FC]">
-                Extracted Flow Features ({uploadData.column_names?.length || uploadData.total_columns})
+                Extracted Flow Features ({Object.keys(uploadData.dtypes).length || uploadData.columns})
               </span>
               <span className="text-[11px] font-mono text-[#00D5FF]">
                 Auto-scaled via StandardScaler
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-1">
-              {uploadData.column_names && uploadData.column_names.length > 0 ? (
-                uploadData.column_names.map((col, idx) => (
+              {Object.keys(uploadData.dtypes).length > 0 ? (
+                Object.keys(uploadData.dtypes).map((col, idx) => (
                   <span
                     key={idx}
                     className={`text-[11px] font-mono px-2 py-0.5 rounded border ${
@@ -624,7 +635,7 @@ export const TrafficAnalyzerPage: React.FC = () => {
               Back
             </button>
             <button
-              onClick={runDetection}
+              onClick={() => runDetection()}
               className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#00D5FF] to-[#7967FF] text-[#05080F] text-xs font-bold hover:opacity-95 shadow-[0_0_20px_rgba(0,213,255,0.4)] flex items-center gap-2"
             >
               <Play size={16} />
@@ -672,7 +683,7 @@ export const TrafficAnalyzerPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#19D995]" />
                 <span className="text-[11px] font-mono font-semibold text-[#19D995] uppercase">
-                  DETECTION SESSION COMPLETE · {activeSession.session?.session_id || "SES-FBCC8E68"}
+                  DETECTION SESSION COMPLETE · {activeSession.session_id}
                 </span>
               </div>
               <h2 className="font-display font-bold text-lg text-[#F4F7FC] mt-0.5">
@@ -693,7 +704,7 @@ export const TrafficAnalyzerPage: React.FC = () => {
               </button>
 
               <a
-                href={api.exportPdfUrl(activeSession.session?.session_id)}
+                href={api.exportPdfUrl(activeSession.session_id)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#00D5FF] text-[#05080F] text-xs font-bold hover:bg-[#5CE6FF] shadow-[0_0_12px_rgba(0,213,255,0.3)]"
@@ -703,7 +714,7 @@ export const TrafficAnalyzerPage: React.FC = () => {
               </a>
 
               <a
-                href={api.exportCsvUrl(activeSession.session?.session_id)}
+                href={api.exportCsvUrl(activeSession.session_id)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#172334] hover:bg-[#1f2f45] border border-[#94AFD7]/15 text-xs text-[#F4F7FC]"
@@ -719,37 +730,37 @@ export const TrafficAnalyzerPage: React.FC = () => {
             <div className="p-4 rounded-xl glass-panel">
               <span className="text-xs text-[#8795A9]">Records Analysed</span>
               <div className="text-xl font-display font-bold text-[#F4F7FC]">
-                {(activeSession.session?.dataset_size || totalRecords).toLocaleString()}
+                {(activeSession.records_analysed ?? totalRecords).toLocaleString()}
               </div>
             </div>
             <div className="p-4 rounded-xl glass-panel">
               <span className="text-xs text-[#8795A9]">Normal Flows</span>
               <div className="text-xl font-display font-bold text-[#19D995]">
-                {(activeSession.session?.normal_count || 3061).toLocaleString()}
+                {(activeSession.normal ?? 0).toLocaleString()}
               </div>
             </div>
             <div className="p-4 rounded-xl glass-panel">
               <span className="text-xs text-[#8795A9]">Flagged Anomalies</span>
               <div className="text-xl font-display font-bold text-[#FF4567]">
-                {(activeSession.session?.anomaly_count || 539).toLocaleString()}
+                {(activeSession.anomalous ?? 0).toLocaleString()}
               </div>
             </div>
             <div className="p-4 rounded-xl glass-panel">
               <span className="text-xs text-[#8795A9]">Anomaly Rate</span>
               <div className="text-xl font-display font-bold text-[#FFB547]">
-                {activeSession.session?.anomaly_rate?.toFixed(2) || "14.97"}%
+                {activeSession.anomaly_pct?.toFixed(2) ?? "N/A"}%
               </div>
             </div>
             <div className="p-4 rounded-xl glass-panel">
               <span className="text-xs text-[#8795A9]">Execution Time</span>
               <div className="text-xl font-display font-bold text-[#00D5FF]">
-                {activeSession.session?.duration_seconds?.toFixed(2) || "3.49"}s
+                {activeSession.processing_seconds?.toFixed(2) ?? "N/A"}s
               </div>
             </div>
           </div>
 
           {/* Ground-truth Evaluation Card if present */}
-          {activeSession.session?.evaluation_metrics && (
+          {activeSession.evaluation && (
             <div className="p-5 rounded-2xl glass-panel border border-[#7967FF]/30 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -767,37 +778,37 @@ export const TrafficAnalyzerPage: React.FC = () => {
                 <div className="p-2.5 rounded-xl bg-[#080B12] border border-[#94AFD7]/10">
                   <span className="text-[10px] text-[#8795A9] block">PRECISION</span>
                   <span className="text-base font-bold text-[#F4F7FC]">
-                    {(activeSession.session.evaluation_metrics.precision * 100).toFixed(1)}%
+                    {(activeSession.evaluation.precision * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[#080B12] border border-[#94AFD7]/10">
                   <span className="text-[10px] text-[#8795A9] block">RECALL</span>
                   <span className="text-base font-bold text-[#19D995]">
-                    {(activeSession.session.evaluation_metrics.recall * 100).toFixed(1)}%
+                    {(activeSession.evaluation.recall * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[#080B12] border border-[#94AFD7]/10">
                   <span className="text-[10px] text-[#8795A9] block">F1-SCORE</span>
                   <span className="text-base font-bold text-[#7967FF]">
-                    {(activeSession.session.evaluation_metrics.f1_score * 100).toFixed(1)}%
+                    {(activeSession.evaluation.f1 * 100).toFixed(1)}%
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[#080B12] border border-[#94AFD7]/10">
                   <span className="text-[10px] text-[#8795A9] block">FPR</span>
                   <span className="text-base font-bold text-[#FFB547]">
-                    {(activeSession.session.evaluation_metrics.false_positive_rate * 100).toFixed(2)}%
+                    {(activeSession.evaluation.false_positive_rate * 100).toFixed(2)}%
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[#080B12] border border-[#94AFD7]/10">
                   <span className="text-[10px] text-[#8795A9] block">ROC-AUC</span>
                   <span className="text-base font-bold text-[#00D5FF]">
-                    {activeSession.session.evaluation_metrics.roc_auc.toFixed(3)}
+                    {activeSession.evaluation.roc_auc.toFixed(3)}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-xl bg-[#080B12] border border-[#94AFD7]/10">
                   <span className="text-[10px] text-[#8795A9] block">PR-AUC</span>
                   <span className="text-base font-bold text-[#00D5FF]">
-                    {activeSession.session.evaluation_metrics.pr_auc.toFixed(3)}
+                    {activeSession.evaluation.pr_auc.toFixed(3)}
                   </span>
                 </div>
               </div>
@@ -815,7 +826,7 @@ export const TrafficAnalyzerPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-[#8795A9] leading-relaxed">
-                Analysis flagged <b>{activeSession.session?.anomaly_count || 539}</b> anomalous flows out of <b>{activeSession.session?.dataset_size || totalRecords}</b> records. Anomaly clusters concentrate heavily around destination port <b>21</b> (FTP credential stuffing) and port <b>22</b> (SSH brute force) with extreme packet transmission rates and abbreviated flow durations.
+                Analysis flagged <b>{activeSession.anomalous}</b> anomalous flows out of <b>{activeSession.records_analysed}</b> records. Scores were calculated by the saved Isolation Forest model; records are ordered by the selected anomaly threshold for analyst review.
               </p>
             </div>
           </div>

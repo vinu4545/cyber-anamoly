@@ -68,16 +68,42 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ---
 
-## 4. Non-Negotiable Integrity Rules
+## 4. Dataset and Model Comparison
+
+### Dataset
+
+The project uses the CIC-IDS2017 Tuesday Working Hours network-flow capture. The source contains **445,909 flows** across three classes:
+
+- **BENIGN:** 432,074 flows
+- **FTP-Patator:** 7,938 flows
+- **SSH-Patator:** 5,897 flows
+
+The live detector uses the **61 numeric flow features** in `sentinel-backend/model/config.json`. `Label` is kept out of model inputs and used only to calculate evaluation metrics. The one-click demo is a stratified, 3,600-row sample from this real capture: 3,200 BENIGN, 220 FTP-Patator, and 180 SSH-Patator. Its feature rows and labels are real CIC-IDS2017 data; IP addresses, protocol, and timestamps shown in the UI are generated demo metadata and are marked as simulated.
+
+### Saved Three-Model Benchmark
+
+The following values are from `sentinel-backend/model/metrics.json`. F1 is calculated from the saved precision and recall values. DBSCAN does not provide continuous scores here, so ROC-AUC and PR-AUC are unavailable.
+
+- **Isolation Forest:** Precision **53.11%**, recall **51.59%**, F1 **52.34%**, ROC-AUC **0.7833**, PR-AUC **0.4740**, false-positive rate **5.11%**, FTP-Patator recall **89.13%**.
+- **One-Class SVM:** Precision **1.44%**, recall **0.67%**, F1 **0.92%**, ROC-AUC **0.6075**, PR-AUC **0.1144**, false-positive rate **5.15%**, FTP-Patator recall **1.17%**.
+- **DBSCAN:** Precision **0.96%**, recall **0.65%**, F1 **0.77%**, ROC-AUC **N/A**, PR-AUC **N/A**, false-positive rate **7.21%**, FTP-Patator recall **0.82%**.
+
+### Why Isolation Forest
+
+Isolation Forest was selected because it achieved the strongest measured results of the three evaluated models: the highest precision, recall, F1, ROC-AUC, and PR-AUC, plus substantially stronger FTP-Patator recall. Its false-positive rate was also slightly below One-Class SVM and lower than DBSCAN. It provides an unsupervised scoring path suitable for the 61-feature live workflow; One-Class SVM and DBSCAN remain offline comparisons because their saved results were markedly weaker and their processing cost is less suitable for interactive use.
+
+These are saved benchmark results, not promises of perfect detection. Per-session results vary with the selected threshold and uploaded sample; an anomaly is a statistical outlier flagged for investigation, not proof of malicious activity.
+
+## 5. Non-Negotiable Integrity Rules
 
 - **Zero Label Leakage**: The `Label` column is strictly isolated prior to preprocessing, scaling, and training. It is accessed solely for post-inference benchmarking on held-out test splits.
-- **No Fabricated Numbers**: All metrics (Precision: 74.2%, Recall: 100%, F1: 85.2%, ROC-AUC: 0.999), confusion matrices, and stage timings represent genuine calculations.
+- **No Fabricated Numbers**: Benchmark figures are the saved calculations listed above. Live session metrics and timings are computed from the current input and threshold.
 - **Anomaly ≠ Malicious**: The Isolation Forest detects statistical outliers in feature space; anomalies are phrased as *"flagged for investigation"*, never classified as attacks unless backed by ground-truth labels.
 - **Contextual Deviation Notice**: Feature deviations represent robust z-scores against normal baseline traffic medians and do not reconstruct the exact random hyper-plane decision tree path.
 
 ---
 
-## 5. Console Feature Matrix (13 Dedicated Views)
+## 6. Console Feature Matrix (13 Dedicated Views)
 
 | Module | Navigation | Highlights |
 |---|---|---|
@@ -97,7 +123,7 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ---
 
-## 6. Known Limitations
+## 7. Known Limitations
 
 1. **CIC-IDS2017 IP & Timestamp Omission**: The standard `MachineLearningCSV` files published by UNB/CIC omit IP addresses and timestamps. When unaugmented files are uploaded, the platform derives sequential indices and explains that network topology is simulated.
 2. **Contextual Explainability vs Exact Paths**: Deviation scores reflect robust z-score discrepancies ($z = |x - \text{median}| / (\text{IQR}/1.349)$) rather than exact tree traversal branches.
@@ -105,7 +131,7 @@ Open **[http://localhost:5173](http://localhost:5173)** in your browser.
 
 ---
 
-## 7. Verification & Automated Testing
+## 8. Verification & Automated Testing
 
 Run the automated backend test suite:
 ```bash

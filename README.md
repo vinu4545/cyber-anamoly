@@ -1,7 +1,21 @@
-# SENTINEL AI
+# SENTINEL AI: Cybersecurity Log Anomaly Discovery
 ### *See Beyond the Traffic. Detect Before the Threat.*
 
-**SENTINEL AI** is an analyst-grade, unsupervised machine learning platform for network-flow anomaly detection and threat investigation. Powered by scikit-learn's **Isolation Forest**, it processes high-dimensional network flow records (CIC-IDS2017), exposes abnormal traffic patterns, enables interactive security investigations, and generates executive SOC threat reports.
+SENTINEL AI is an unsupervised network-flow anomaly discovery system using CIC-IDS2017 and a saved Isolation Forest model. A FastAPI backend serves the model, while a React + TypeScript dashboard supports CSV uploads, scoring, and investigations. A flag means **worth investigating**, not **confirmed attack**.
+
+## Contents
+
+- [Architecture](#1-system-architecture)
+- [Setup and Run](#2-setup-and-run)
+- [Project Structure](#3-project-structure)
+- [Investigation Workflow](#4-core-investigation-workflow)
+- [Dataset and Preprocessing](#5-dataset-and-preprocessing)
+- [Model Comparison](#6-model-comparison)
+- [Why Isolation Forest](#7-why-isolation-forest)
+- [Integrity Rules](#8-integrity-rules)
+- [Console Features](#9-console-features)
+- [Limitations](#10-limitations)
+- [Verification](#11-verification)
 
 ---
 
@@ -14,131 +28,215 @@ graph TD
     B -->|Metadata Extraction| D[IPs, Timestamps, Identifiers]
     B -->|61 Numeric Features| E[Signed log1p + StandardScaler]
     E --> F[Isolation Forest Model Ensemble]
-    F --> G[Calibrated Anomaly Scoring 0.0 - 1.0]
+    F --> G[Anomaly Scoring]
     G --> H[Contextual Explainability: Robust z-scores]
     G --> I[(SQLite: Sessions & Investigations)]
-    I --> J[Enterprise SOC Console: 13 Dedicated Modules]
+    I --> J[Enterprise SOC Console]
     I --> K[Branded PDF Reports via ReportLab]
 ```
 
 ---
 
-## 2. Quickstart & One-Command Execution
+## 2. Setup and Run
 
-### Prerequisites
-- **Python 3.11+**
-- **Node.js 18+ & npm**
+Run the backend in one terminal from the repository root:
 
-### Single Command Startup
 ```bash
-# Run both Backend (Port 8000) and Frontend (Port 5173) concurrently
-make run
-```
-*Or execute independently:*
-
-**Backend (FastAPI):**
-```bash
-python3 -m venv backend/venv
-source backend/venv/bin/activate
-pip install -r backend/requirements.txt
-PYTHONPATH=backend uvicorn app.main:app --host 127.0.0.1 --port 8000
+cd sentinel-backend
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000
 ```
 
-**Frontend (React + Vite):**
+The saved model and scaler must be present in `sentinel-backend/model/`. Use the scikit-learn version that matches the version used to train them. API docs: [http://localhost:8000/docs](http://localhost:8000/docs).
+
+Run the frontend in a second terminal from the repository root:
+
 ```bash
-npm install --legacy-peer-deps
+cd sentinel-frontend
+npm install
 npm run dev
 ```
-Open **[http://localhost:5173](http://localhost:5173)** in your browser.
+
+Open [http://localhost:5173](http://localhost:5173). The Vite development server proxies local `/api` requests to the backend on port `8000`.
+
+For Vercel Production, set `VITE_API_BASE_URL=https://cyber-anamoly.onrender.com` and redeploy after changing it. The `VITE_` variable is public browser configuration; do not put secrets in it.
+
+## 3. Project Structure
+
+```text
+.
+├── .gitignore
+├── README.md
+├── Model_Traning.ipynb
+├── Tuesday-WorkingHours.pcap_ISCX.csv # local source capture; ignored
+├── sample_inputs.csv                  # tracked sample input
+├── sample_labels.csv                  # tracked sample labels
+├── artifacts/                         # local model experiments; ignored
+├── data/                              # local workspace data
+├── export/                            # model export configuration and metrics
+├── gemini_generated_video_e39df147.mp4
+├── sentinel-backend.zip
+├── sentinel-backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   └── pdf_generator.py
+│   ├── data/
+│   │   └── demo_cicids2017.csv
+│   ├── model/
+│   │   ├── config.json
+│   │   ├── iforest.joblib
+│   │   ├── metrics.json
+│   │   └── scaler.joblib
+│   └── requirements.txt
+└── sentinel-frontend/
+    ├── public/
+    ├── src/
+    │   ├── components/
+    │   ├── features/
+    │   ├── lib/
+    │   ├── pages/
+    │   └── App.tsx
+    ├── package.json
+    └── vite.config.ts
+```
+
+The full Tuesday capture is local and ignored by Git. This repository currently tracks the model files under `sentinel-backend/model/` and the stratified demo CSV so Render can load them. Ignore rules apply only to new, untracked files; they do not remove files already committed. Keep runtime model files in `sentinel-backend/model/` unless the deployment storage is changed.
 
 ---
 
-## 3. Core Investigation Workflow
+## 4. Core Investigation Workflow
 
 1. **Overview Dashboard**: Monitor real-time flow counts, normal vs anomalous volume trends, Threat Radar sweeps, and dataset health scores.
-2. **Traffic Analyzer (Core)**:
-   - **Step 1 (Upload)**: Drag-and-drop any CIC-IDS2017 CSV or click **"USE DEMO DATASET"** (3,600 flows).
-   - **Step 2 (Inspect)**: Review schema compatibility, missing values, and isolated label detection.
-   - **Step 3 (Configure)**: Adjust contamination threshold slider (e.g. 4.0% boundary) and tree count.
-   - **Step 4 (Detect)**: Watch the live 7-stage progress stepper.
-   - **Step 5 (Results)**: Analyze KPI distributions, ground-truth metrics (Precision, Recall, ROC-AUC), and the machine-generated AI Security Brief.
-   - **Step 6 (Triage)**: Search, sort, and filter records; click any row to open the slide-over **Investigation Drawer**.
+2. **Traffic Analyzer (Core)**: Upload a compatible CSV or run the real CIC-IDS2017 demo sample, inspect its schema, configure the threshold, run detection, review calculated results, and triage flagged records in the **Investigation Drawer**.
 3. **Threat Investigations**: Drag items across the Kanban board (`New` → `Under Investigation` → `Resolved` → `False Positive`), with changes persisted to SQLite.
 4. **Report Export**: Download branded PDF threat reports generated via ReportLab or streaming CSV exports.
 
 ---
 
-## 4. Dataset and Model Comparison
+## 5. Dataset and Preprocessing
 
-### Dataset
+### Dataset source and labels
 
-The project uses the CIC-IDS2017 Tuesday Working Hours network-flow capture. The source contains **445,909 flows** across three classes:
+The project uses the CIC-IDS2017 Tuesday-WorkingHours `MachineLearningCSV` file. It contains **445,909 network flows** and **79 columns**: 78 numeric features plus `Label`. Removing **264 rows** with missing or infinite values leaves **445,645 flows**.
 
-- **BENIGN:** 432,074 flows
-- **FTP-Patator:** 7,938 flows
-- **SSH-Patator:** 5,897 flows
+| Label | Flows | Description |
+|---|---:|---|
+| BENIGN | 432,074 | Normal traffic |
+| FTP-Patator | 7,938 | Patator password-guessing (brute-force) attacks against FTP, port 21 |
+| SSH-Patator | 5,897 | Patator password-guessing (brute-force) attacks against SSH, port 22 |
 
-The live detector uses the **61 numeric flow features** in `sentinel-backend/model/config.json`. `Label` is kept out of model inputs and used only to calculate evaluation metrics. The one-click demo is a stratified, 3,600-row sample from this real capture: 3,200 BENIGN, 220 FTP-Patator, and 180 SSH-Patator. Its feature rows and labels are real CIC-IDS2017 data; IP addresses, protocol, and timestamps shown in the UI are generated demo metadata and are marked as simulated.
+These counts are for this one Tuesday file, not the complete CIC-IDS2017 dataset. Attacks are about **3%** of the file. The demo sample is stratified from these real flows: 3,200 BENIGN, 220 FTP-Patator, and 180 SSH-Patator.
 
-### Saved Three-Model Benchmark
+The feature set describes forward/backward packet counts and sizes, flow duration, bytes and packets per second, inter-arrival times (IAT), TCP flag counts, window sizes, and active/idle times.
 
-The following values are from `sentinel-backend/model/metrics.json`. F1 is calculated from the saved precision and recall values. DBSCAN does not provide continuous scores here, so ROC-AUC and PR-AUC are unavailable.
+### Feature reduction
 
-- **Isolation Forest:** Precision **53.11%**, recall **51.59%**, F1 **52.34%**, ROC-AUC **0.7833**, PR-AUC **0.4740**, false-positive rate **5.11%**, FTP-Patator recall **89.13%**.
-- **One-Class SVM:** Precision **1.44%**, recall **0.67%**, F1 **0.92%**, ROC-AUC **0.6075**, PR-AUC **0.1144**, false-positive rate **5.15%**, FTP-Patator recall **1.17%**.
-- **DBSCAN:** Precision **0.96%**, recall **0.65%**, F1 **0.77%**, ROC-AUC **N/A**, PR-AUC **N/A**, false-positive rate **7.21%**, FTP-Patator recall **0.82%**.
+| Stage | Columns | Action |
+|---|---:|---|
+| Initial | 78 | Numeric features; `Label` is separate |
+| Constant-column removal | 68 | Remove 10 constant columns |
+| Duplicate-column removal | 62 | Remove 6 duplicates: Subflow Fwd Packets, Subflow Bwd Packets, Subflow Fwd Bytes, Avg Fwd Segment Size, SYN Flag Count, Fwd Header Length.1 |
+| Leakage-risk exclusion | 61 | Exclude Destination Port because ports 21 and 22 nearly reveal attacks in this one-day capture |
+| Final model input | 61 | Features consumed by the models |
 
-### Why Isolation Forest
+### Preprocessing and evaluation split
 
-Isolation Forest was selected because it achieved the strongest measured results of the three evaluated models: the highest precision, recall, F1, ROC-AUC, and PR-AUC, plus substantially stronger FTP-Patator recall. Its false-positive rate was also slightly below One-Class SVM and lower than DBSCAN. It provides an unsupervised scoring path suitable for the 61-feature live workflow; One-Class SVM and DBSCAN remain offline comparisons because their saved results were markedly weaker and their processing cost is less suitable for interactive use.
+- Apply signed `log1p`, then `StandardScaler`; fit the scaler using normal training data only.
+- Keep `Label` out of every model input; use it only for evaluation.
+- Split normal flows into 70% training, 10% validation, and 20% test. Split attack flows into 30% validation and 70% test.
+- Train on normal traffic only, tune using validation data, and use the test set once for final evaluation.
 
-These are saved benchmark results, not promises of perfect detection. Per-session results vary with the selected threshold and uploaded sample; an anomaly is a statistical outlier flagged for investigation, not proof of malicious activity.
+The one-click demo is a stratified sample of **3,600 real rows** from the source file. Its features and labels are real CIC-IDS2017 values. Source IP, destination IP, protocol, and timestamp displayed in the application are generated demo metadata and are never model inputs.
 
-## 5. Non-Negotiable Integrity Rules
+## 6. Model Comparison
+
+Results are on the held-out test set using the alert line at the 95th percentile of normal-traffic scores, corresponding to about 5% false alarms.
+
+| Model | PR-AUC | ROC-AUC | Precision | Recall | False-positive rate | FTP-Patator caught | SSH-Patator caught |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Isolation Forest | 0.474 | 0.783 | 0.531 | 0.516 | 0.051 | 89.1% | 1.1% |
+| One-Class SVM | 0.114 | 0.607 | 0.014 | 0.007 | 0.051 | 1.2% | 0.0% |
+| DBSCAN | n/a | n/a | 0.010 | 0.006 | 0.072 | 0.8% | 0.4% |
+
+Random guessing gives a PR-AUC of about 0.10 because attacks make up about 10% of the test set.
+
+### Tuned settings and comparison context
+
+- Isolation Forest uses 100 trees, with each tree using all 302,269 training flows.
+- One-Class SVM uses `nu=0.01`, `gamma="scale"`, and a 20,000-flow sample of normal traffic.
+- DBSCAN uses 10 PCA components, `min_samples=10`, and `eps` selected from the k-distance curve. It is evaluated on a 30,000-flow test sample. DBSCAN has no `predict()` or continuous anomaly score, so ROC-AUC and PR-AUC do not apply.
+- Plain Isolation Forest first achieved PR-AUC about 0.13. The log transform, use of all training data per tree, and validation tuning raised it to 0.474.
+
+### Qualitative comparison
+
+| Criteria | Isolation Forest | One-Class SVM | DBSCAN |
+|---|---|---|---|
+| Learning type | Unsupervised | Unsupervised | Unsupervised |
+| Training data | Normal traffic only | Normal traffic only | No training; clusters the data |
+| Anomaly score | Yes; flows can be ranked | Yes; decision function | No; noise yes/no |
+| Scales to large data | Yes; about 10 s to train on 302,269 flows | Slow; trained on a 20,000-flow sample | Expensive; evaluated on a 30,000-flow sample |
+| Main parameters | Trees, samples per tree | `nu`, `gamma` | `eps`, `min_samples` |
+| Result here | Best | About random | Worse than random |
+
+## 7. Why Isolation Forest
+
+- It trains using normal traffic only, so labelled attacks are not needed for training.
+- It assigns every flow an anomaly score. Analysts can rank flows and adjust the alert threshold; DBSCAN only says whether a point is noise.
+- It is fast and scales to hundreds of thousands of flows; this configuration trains in about 10 s on 302,269 flows.
+- The choice was measured, not assumed: with the same data and tuning effort it achieved PR-AUC 0.474 versus 0.114 for One-Class SVM. DBSCAN's flagged points were less likely to be attacks than average.
+- Brute-force attempts repeat similar patterns thousands of times and form dense groups. DBSCAN can treat those as normal clusters, while One-Class SVM's boundary did not separate them effectively in this experiment.
+
+## 8. Integrity Rules
 
 - **Zero Label Leakage**: The `Label` column is strictly isolated prior to preprocessing, scaling, and training. It is accessed solely for post-inference benchmarking on held-out test splits.
-- **No Fabricated Numbers**: Benchmark figures are the saved calculations listed above. Live session metrics and timings are computed from the current input and threshold.
+- **No Fabricated Numbers**: The benchmark table reports the supplied held-out results. Live session metrics and timings are computed from the current input and threshold.
 - **Anomaly ≠ Malicious**: The Isolation Forest detects statistical outliers in feature space; anomalies are phrased as *"flagged for investigation"*, never classified as attacks unless backed by ground-truth labels.
 - **Contextual Deviation Notice**: Feature deviations represent robust z-scores against normal baseline traffic medians and do not reconstruct the exact random hyper-plane decision tree path.
 
 ---
 
-## 6. Console Feature Matrix (13 Dedicated Views)
+## 9. Console Features
 
 | Module | Navigation | Highlights |
 |---|---|---|
 | **Overview** | Main | KPIs, area volume ingress chart, threat donut, compact Threat Radar, recent events |
 | **Live Monitor** | Main | Real-time simulated flow stream, pause/resume, severity filter, events/sec sparkline |
-| **Traffic Analyzer** | Main | Guided 6-step wizard, drag-and-drop CSV, threshold tuning, TanStack records table |
+| **Traffic Analyzer** | Main | Guided upload, schema inspection, detection, results, record filtering, CSV/PDF export |
 | **Threat Investigations** | Main | Kanban board & table view, PATCH status persistence, configurable triage policy |
 | **Network Intelligence**| Main | Interactive SVG force-directed topology, packet animations, target port distribution |
-| **Security Analytics** | Analytics | 8 cross-filtering charts (protocols, source IPs, score histogram, feature overlay) |
+| **Security Analytics** | Analytics | Cross-filtering charts for protocols, source IPs, score distribution, and feature overlays |
 | **Detection History** | Analytics | SQLite archive of past sessions, reopen runs, delete, anomaly trend sparkline |
 | **Project Work** | Workspace | Academic research workspace, class imbalance visuals, feature reduction drop report |
-| **Dataset Explorer** | Workspace | Column browser, dtypes, null percentages, 8x8 Pearson correlation heatmap |
+| **Dataset Explorer** | Workspace | Column browser, dtypes, null percentages, Pearson correlation heatmap |
 | **Model Laboratory** | Workspace | Model parameters, fair One-Class SVM & DBSCAN benchmark, interactive tree demo |
-| **Methodology** | Workspace | 10-stage interactive engineering flow with direct shortcuts to live console views |
+| **Methodology** | Workspace | Interactive engineering flow with shortcuts to console views |
 | **Settings** | System | Severity percentile policy sliders, API URL configuration, engine defaults |
 | **About SENTINEL** | System | Product vision, technology stack, architecture diagram, known limitations |
 
 ---
 
-## 7. Known Limitations
+## 10. Limitations
 
-1. **CIC-IDS2017 IP & Timestamp Omission**: The standard `MachineLearningCSV` files published by UNB/CIC omit IP addresses and timestamps. When unaugmented files are uploaded, the platform derives sequential indices and explains that network topology is simulated.
-2. **Contextual Explainability vs Exact Paths**: Deviation scores reflect robust z-score discrepancies ($z = |x - \text{median}| / (\text{IQR}/1.349)$) rather than exact tree traversal branches.
-3. **High-Complexity Algorithms**: One-Class SVM and DBSCAN exhibit $O(n^2)$ to $O(n^3)$ scaling complexity. Live training is restricted to Isolation Forest, with comparison benchmarks computed on certified test splits.
+- **SSH-Patator is mostly missed (about 1%)**: An individual SSH attempt looks ordinary as a single flow. Time-window features, such as flows per source IP per minute, are a planned improvement.
+- **A high score is not necessarily a worse flow**: Some of the highest-scoring flows were harmless large transfers, while FTP-Patator flows sat in a narrow band just below them.
+- **Limited coverage**: Evaluation uses one day of one dataset. Real networks can also contain legitimate FTP and SSH traffic.
+- **Simulated metadata**: Source IP, destination IP, protocol, and timestamp shown by the app are simulated demo values because the input file does not contain them. They are never model inputs.
+- **A flag is not a verdict**: A flagged flow is worth investigating, not a confirmed attack.
+- **Contextual explanations**: Feature deviations are indicators, not exact Isolation Forest decision paths. One-Class SVM and DBSCAN are offline comparisons; Isolation Forest is the live model.
 
 ---
 
-## 8. Verification & Automated Testing
+## 11. Verification
 
-Run the automated backend test suite:
+Check that the backend responds:
 ```bash
-make test
-# Or:
-PYTHONPATH=backend backend/venv/bin/pytest backend/tests
+curl http://localhost:8000/api/health
 ```
-- `test_no_label_leakage`: Verifies zero label leakage into feature matrix.
-- `test_infinite_and_nan_handling`: Verifies clean handling of infinite flow rates and missing values.
-- `test_deterministic_scoring`: Verifies mathematical determinism across fixed random states.
+
+Build the frontend:
+```bash
+cd sentinel-frontend
+npm run build
+```

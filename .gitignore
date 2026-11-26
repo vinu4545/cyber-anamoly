@@ -37,3 +37,9 @@ sentinel-backend/data/*.npy
 
 
 .vercel
+
+# Locally generated data and model artifacts
+data/
+artifacts/
+export/
+*.joblib
